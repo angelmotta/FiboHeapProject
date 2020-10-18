@@ -58,11 +58,13 @@ T FibonacciHeap<T>::GetMin() {
 
 template <typename T>
 void FibonacciHeap<T>::Extract_Min() {
+    // promote children from min node towards linked list
     for (auto n : min->m_Hijos) {
         m_heap.push_front(n);
     }
     m_heap.remove(min);
     m_size--;
+    delete min; // free memory
     min = m_heap.front();
     for (auto n : m_heap) {
         if (min->m_key > n->m_key) {
@@ -92,6 +94,7 @@ Node<T>* FibonacciHeap<T>::Unir(Node<T>* p1, Node<T>* p2) {
 
 template <typename T>
 void FibonacciHeap<T>::Compactar() {
+    if(m_heap.size() < 2) return;  // base case
     int maxGrado = floor(log2(m_size));
     vector<Node<T> *> grados(maxGrado + 2, nullptr);
     auto it = m_heap.begin();
