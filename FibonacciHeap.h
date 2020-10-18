@@ -20,6 +20,7 @@ private:
     string filename = "../ngrafo.vz";
 
 public:
+    FibonacciHeap();
     void Extract_Min();
     T GetMin();
     void Delete(T deletekey);
@@ -31,17 +32,23 @@ public:
 };
 
 template <typename T>
+FibonacciHeap<T>::FibonacciHeap(){
+    m_size = 0;
+    min = nullptr;
+}
+
+template <typename T>
 void FibonacciHeap<T>::Insert(T newkey){
     auto newNode = new Node<T>(newkey);
     m_heap.push_back(newNode);
-    if(m_heap.size() == 0){
+    m_size++;
+    if(min == nullptr){
         min = newNode;
     }else{
         if(min->m_key > newkey){
             min = newNode;
         }
     }
-    return;
 }
 
 template <typename T>
@@ -85,15 +92,7 @@ Node<T>* FibonacciHeap<T>::Unir(Node<T>* p1, Node<T>* p2) {
 
 template <typename T>
 void FibonacciHeap<T>::Compactar() {
-    //int maxGrado = floor(log2(m_size));
-    int maxGrado = 20;
-    //Get max Grado
-    /*int maxGrado = -1;
-    for (auto it=m_heap.begin(); it != m_heap.end(); ++it){
-      if((*it)->m_Grado > maxGrado){
-        maxGrado = (*it)->m_Grado;
-      }
-    }*/
+    int maxGrado = floor(log2(m_size));
     vector<Node<T> *> grados(maxGrado + 2, nullptr);
     auto it = m_heap.begin();
     auto itDel = m_heap.end(); // temporal
