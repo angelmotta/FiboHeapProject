@@ -1,6 +1,7 @@
 #ifndef FIBOHEAP_NODE_H
 #define FIBOHEAP_NODE_H
 #include <list>
+#include <utility>
 using namespace std;
 
 template <typename T>
@@ -16,6 +17,16 @@ struct Node {
         m_Grado = 0;
         is_black = false;
         m_Padre = nullptr;
+    }
+};
+
+struct Picture {
+    string pathFile;
+    vector<float> vc;
+
+    Picture(string _pathFile, vector<float> _vc) {
+        pathFile = std::move(_pathFile);
+        vc = std::move(_vc);
     }
 };
 

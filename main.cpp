@@ -19,6 +19,6 @@ int main() {
     fiboHeap.Insert(15);
     fiboHeap.Extract_Min();
     fiboHeap.printGraphViz();
-    fiboHeap.loadPictures();
+    //fiboHeap.loadPictures();
     return 0;
 }

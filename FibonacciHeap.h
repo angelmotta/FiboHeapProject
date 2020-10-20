@@ -23,6 +23,7 @@ private:
     void printGraphVizBinomialTree(Node<T>* ptrNodo);
     string filename = "ngrafo.vz";
     string fileListPics = "listPathPictures.txt";
+    vector<float> vectorizar(CImg<float>& img);
 public:
     FibonacciHeap();
     void Extract_Min();
@@ -175,10 +176,13 @@ void FibonacciHeap<T>::printGraphViz(){
 template <typename T>
 void FibonacciHeap<T>::loadPictures(){
     cout << "** Load Pictures **\n";
+    // Generate list path of pictures
     system("find faces -type f -name \"*.jpg\" > listPathPictures.txt");
-    // Open List of Pictures and apply haar function to each picture
+    // Open List path of Pictures and apply haar function to each picture
     string picFile;
     ifstream inFileList(fileListPics);
+    // Create vector of picture Objects
+    vector<Picture> pictureVector;
     while(getline(inFileList, picFile)){
         //cout << "load this: " << picFile << '\n';
         CImg<float> img(picFile.c_str());
@@ -186,8 +190,30 @@ void FibonacciHeap<T>::loadPictures(){
         CImg<float> imgB = img.haar(false,2);
         CImg<float> imgC = imgB.crop(0,0,27,27);
         // Vectorizar
-        //auto vc = Vectorizar(c);
+        vector<float> vc = vectorizar(imgC);
+        auto picObject = Picture(picFile, vc);  // constructor Picture
+        pictureVector.push_back(picObject);
+    }
+    // Get Euclidean distance between Pictures Objects in O(n^2)
+    cout << "Get Euclidean distance from pictures\n";
+    for(int i = 0; i < pictureVector.size(); i++){
+        for(int j = i + 1; j < pictureVector.size(); j++){
+            //cout << "Euclidean distance: " << pictureVector[i].pathFile << " and " << pictureVector[j].pathFile << "\n";
+            float sum = 0;
+            for(int k = 0; k < pictureVector[i].vc.size(); k++){
+                sum += pow(pictureVector[i].vc[k] - pictureVector[j].vc[k], 2);
+            }
+            float distance = sqrt(sum);
+        }
     }
 }
 
+template <typename T>
+vector<float> FibonacciHeap<T>::vectorizar(CImg<float>& img){
+    vector<float> result;
+    cimg_forXY(img,x,y){
+        result.push_back( (img(x,y,0) + img(x,y,1) +  img(x,y,2))/3);
+    }
+    return result;
+}
 #endif //FIBOHEAP_FIBONACCIHEAP_H
