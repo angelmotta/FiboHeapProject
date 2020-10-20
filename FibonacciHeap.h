@@ -7,6 +7,10 @@
 #include <queue>
 #include <cmath>
 #include "Node.h"
+#define cimg_use_jpeg 1
+#include "CImg.h"
+
+using namespace cimg_library;
 using namespace std;
 
 template <typename T>
@@ -17,8 +21,8 @@ private:
     list <Node<T>*> m_heap;
     Node<T>* min;
     void printGraphVizBinomialTree(Node<T>* ptrNodo);
-    string filename = "../ngrafo.vz";
-
+    string filename = "ngrafo.vz";
+    string fileListPics = "listPathPictures.txt";
 public:
     FibonacciHeap();
     void Extract_Min();
@@ -28,7 +32,7 @@ public:
     void Compactar();
     Node<T>* Unir(Node<T>* p1, Node<T>* p2);
     void printGraphViz();
-
+    void loadPictures();
 };
 
 template <typename T>
@@ -167,5 +171,23 @@ void FibonacciHeap<T>::printGraphViz(){
     outFile << "}";
     outFile.close();
 };
+
+template <typename T>
+void FibonacciHeap<T>::loadPictures(){
+    cout << "** Load Pictures **\n";
+    system("find faces -type f -name \"*.jpg\" > listPathPictures.txt");
+    // Open List of Pictures and apply haar function to each picture
+    string picFile;
+    ifstream inFileList(fileListPics);
+    while(getline(inFileList, picFile)){
+        //cout << "load this: " << picFile << '\n';
+        CImg<float> img(picFile.c_str());
+        img.resize(128, 128);
+        CImg<float> imgB = img.haar(false,2);
+        CImg<float> imgC = imgB.crop(0,0,27,27);
+        // Vectorizar
+        //auto vc = Vectorizar(c);
+    }
+}
 
 #endif //FIBOHEAP_FIBONACCIHEAP_H
