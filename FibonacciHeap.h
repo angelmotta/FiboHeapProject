@@ -6,6 +6,7 @@
 #include <fstream>
 #include <queue>
 #include <cmath>
+#include <chrono>
 #include "Node.h"
 #define cimg_use_jpeg 1
 #include "CImg.h"
@@ -24,12 +25,15 @@ private:
     string filename = "ngrafo.vz";
     string fileListPics = "listPathPictures.txt";
     vector<float> vectorizar(CImg<float>& img);
+    vector<Picture*> pictureVector;
 public:
     FibonacciHeap();
+    ~FibonacciHeap();
     void Extract_Min();
     T GetMin();
+    Node<T>* GetMinv2();
     void Delete(T deletekey);
-    void Insert(T newkey);
+    void Insert(T newkey, Picture* a = nullptr, Picture* b = nullptr);
     void Compactar();
     Node<T>* Unir(Node<T>* p1, Node<T>* p2);
     void printGraphViz();
@@ -43,8 +47,8 @@ FibonacciHeap<T>::FibonacciHeap(){
 }
 
 template <typename T>
-void FibonacciHeap<T>::Insert(T newkey){
-    auto newNode = new Node<T>(newkey);
+void FibonacciHeap<T>::Insert(T newkey, Picture* a, Picture* b){
+    auto newNode = new Node<T>(newkey, a, b);
     m_heap.push_back(newNode);
     m_size++;
     if(min == nullptr){
@@ -59,6 +63,11 @@ void FibonacciHeap<T>::Insert(T newkey){
 template <typename T>
 T FibonacciHeap<T>::GetMin() {
     return min->m_key;
+}
+
+template <typename T>
+Node<T>* FibonacciHeap<T>::GetMinv2() {
+    return min;
 }
 
 template <typename T>
@@ -177,12 +186,12 @@ template <typename T>
 void FibonacciHeap<T>::loadPictures(){
     cout << "** Load Pictures **\n";
     // Generate list path of pictures
-    system("find faces -type f -name \"*.jpg\" > listPathPictures.txt");
+    system("find faces_subSet -type f -name \"*.jpg\" > listPathPictures.txt");
     // Open List path of Pictures and apply haar function to each picture
     string picFile;
     ifstream inFileList(fileListPics);
     // Create vector of picture Objects
-    vector<Picture> pictureVector;
+    auto start = chrono::steady_clock::now();
     while(getline(inFileList, picFile)){
         //cout << "load this: " << picFile << '\n';
         CImg<float> img(picFile.c_str());
@@ -190,22 +199,31 @@ void FibonacciHeap<T>::loadPictures(){
         CImg<float> imgB = img.haar(false,2);
         CImg<float> imgC = imgB.crop(0,0,27,27);
         // Vectorizar
-        vector<float> vc = vectorizar(imgC);
-        auto picObject = Picture(picFile, vc);  // constructor Picture
+        vector<float> vc = vectorizar(imgC); // get vector caracteristico
+        auto picObject = new Picture(picFile, vc);  // constructor Picture
         pictureVector.push_back(picObject);
     }
+    auto end = chrono::steady_clock::now();
+    cout << "Create picure objects : " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << "\n";
     // Get Euclidean distance between Pictures Objects in O(n^2)
-    cout << "Get Euclidean distance from pictures\n";
+    //cout << "Get Euclidean distance from pictures\n";
+    //start = chrono::steady_clock::now();
+
     for(int i = 0; i < pictureVector.size(); i++){
         for(int j = i + 1; j < pictureVector.size(); j++){
             //cout << "Euclidean distance: " << pictureVector[i].pathFile << " and " << pictureVector[j].pathFile << "\n";
             float sum = 0;
-            for(int k = 0; k < pictureVector[i].vc.size(); k++){
-                sum += pow(pictureVector[i].vc[k] - pictureVector[j].vc[k], 2);
+            for(int k = 0; k < pictureVector[i]->vc.size(); k++){
+                sum += pow(pictureVector[i]->vc[k] - pictureVector[j]->vc[k], 2);
             }
+            //cout << "Distance sum: " << sum << '\n';
             float distance = sqrt(sum);
+            //cout << "Distance sum: " << distance << '\n';
+            this->Insert(distance, pictureVector[i], pictureVector[j]);
         }
     }
+    //end = chrono::steady_clock::now();
+    //cout << "Euclidean distance O(n^2) : " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << "\n";
 }
 
 template <typename T>
@@ -216,4 +234,14 @@ vector<float> FibonacciHeap<T>::vectorizar(CImg<float>& img){
     }
     return result;
 }
+
+template <typename T>
+FibonacciHeap<T>::~FibonacciHeap(){
+    cout << "** Destructure called **\n";
+    // Delete picture objects
+    for(auto & i : pictureVector){
+        delete i;
+    }
+}
+
 #endif //FIBOHEAP_FIBONACCIHEAP_H
