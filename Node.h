@@ -23,6 +23,8 @@ struct Node {
     bool is_black;
     struct Picture* pictureA;
     struct Picture* pictureB;
+    int src;
+    int dst;
 
     Node(T newkey) {
         m_key = newkey;
@@ -41,6 +43,22 @@ struct Node {
         pictureA = picA;
         pictureB = picB;
     }
+
+    Node(T newkey, Picture* picA, Picture* picB, int _src, int _dst) {
+        m_key = newkey;
+        m_Grado = 0;
+        is_black = false;
+        m_Padre = nullptr;
+        pictureA = picA;
+        src = _src;
+        pictureB = picB;
+        dst = _dst;
+    }
+};
+
+struct subset {
+    int parent;
+    int rank;
 };
 
 #endif //FIBOHEAP_NODE_H
