@@ -25,6 +25,7 @@ int main() {
     */
 
     fiboHeap.loadPictures();
+    /*
     for(int i = 3; i >= 1; i--){
         cout << "Min: " << fiboHeap.GetMin() << "\n";
         auto minNode = fiboHeap.GetMinv2();
@@ -32,6 +33,7 @@ int main() {
         cout << "picB: " << minNode->pictureB->pathFile << '\n';
         fiboHeap.Extract_Min();
     }
+     */
     // Stress and Correctness Test
     /*
     for(int i = 5000; i >= 1; i--){

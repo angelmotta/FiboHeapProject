@@ -25,7 +25,12 @@ private:
     string filename = "ngrafo.vz";
     string fileListPics = "listPathPictures.txt";
     vector<float> vectorizar(CImg<float>& img);
+    void genDistanceEuclidean();
+    void kruskalMST();
+    int find(subset* subsets, int i);
+    void Union(subset* subsets, int x, int y);
     vector<Picture*> pictureVector;
+    vector<Node<T>*> mstResult;
 public:
     FibonacciHeap();
     ~FibonacciHeap();
@@ -33,7 +38,7 @@ public:
     T GetMin();
     Node<T>* GetMinv2();
     void Delete(T deletekey);
-    void Insert(T newkey, Picture* a = nullptr, Picture* b = nullptr);
+    void Insert(T newkey, Picture* a = nullptr, Picture* b = nullptr, int src = 0, int dst = 0);
     void Compactar();
     Node<T>* Unir(Node<T>* p1, Node<T>* p2);
     void printGraphViz();
@@ -47,8 +52,8 @@ FibonacciHeap<T>::FibonacciHeap(){
 }
 
 template <typename T>
-void FibonacciHeap<T>::Insert(T newkey, Picture* a, Picture* b){
-    auto newNode = new Node<T>(newkey, a, b);
+void FibonacciHeap<T>::Insert(T newkey, Picture* a, Picture* b, int src, int dst){
+    auto newNode = new Node<T>(newkey, a, b, src, dst);
     m_heap.push_back(newNode);
     m_size++;
     if(min == nullptr){
@@ -78,7 +83,7 @@ void FibonacciHeap<T>::Extract_Min() {
     }
     m_heap.remove(min);
     m_size--;
-    delete min; // free memory
+    //delete min; // free memory
     min = m_heap.front();
     for (auto n : m_heap) {
         if (min->m_key > n->m_key) {
@@ -183,13 +188,35 @@ void FibonacciHeap<T>::printGraphViz(){
 };
 
 template <typename T>
+void FibonacciHeap<T>::genDistanceEuclidean(){
+    cout << "** Generate Euclidean distance from pictures **\n";
+    //auto start = chrono::steady_clock::now();
+    for(int i = 0; i < pictureVector.size(); i++){
+        for(int j = i + 1; j < pictureVector.size(); j++){
+            //cout << "Euclidean distance: " << pictureVector[i].pathFile << " and " << pictureVector[j].pathFile << "\n";
+            float sum = 0;
+            for(int k = 0; k < pictureVector[i]->vc.size(); k++){
+                sum += pow(pictureVector[i]->vc[k] - pictureVector[j]->vc[k], 2);
+            }
+            //cout << "Distance sum: " << sum << '\n';
+            float distance = sqrt(sum);
+            //cout << "Distance sum: " << distance << '\n';
+            this->Insert(distance, pictureVector[i], pictureVector[j], i, j);  // Insert into Fibonacci Heap
+        }
+    }
+    //auto end = chrono::steady_clock::now();
+    //cout << "Euclidean distance O(n^2) : " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << "\n";
+}
+
+template <typename T>
 void FibonacciHeap<T>::loadPictures(){
     cout << "** Load Pictures **\n";
-    // Generate list path of pictures
+    // Generate list of total pictures in list
     system("find faces_subSet -type f -name \"*.jpg\" > listPathPictures.txt");
     // Open List path of Pictures and apply haar function to each picture
     string picFile;
     ifstream inFileList(fileListPics);
+
     // Create vector of picture Objects
     auto start = chrono::steady_clock::now();
     while(getline(inFileList, picFile)){
@@ -205,25 +232,12 @@ void FibonacciHeap<T>::loadPictures(){
     }
     auto end = chrono::steady_clock::now();
     cout << "Create picure objects : " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << "\n";
-    // Get Euclidean distance between Pictures Objects in O(n^2)
-    //cout << "Get Euclidean distance from pictures\n";
-    //start = chrono::steady_clock::now();
 
-    for(int i = 0; i < pictureVector.size(); i++){
-        for(int j = i + 1; j < pictureVector.size(); j++){
-            //cout << "Euclidean distance: " << pictureVector[i].pathFile << " and " << pictureVector[j].pathFile << "\n";
-            float sum = 0;
-            for(int k = 0; k < pictureVector[i]->vc.size(); k++){
-                sum += pow(pictureVector[i]->vc[k] - pictureVector[j]->vc[k], 2);
-            }
-            //cout << "Distance sum: " << sum << '\n';
-            float distance = sqrt(sum);
-            //cout << "Distance sum: " << distance << '\n';
-            this->Insert(distance, pictureVector[i], pictureVector[j]);
-        }
-    }
-    //end = chrono::steady_clock::now();
-    //cout << "Euclidean distance O(n^2) : " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << "\n";
+    // Gennerate Euclidean distance between Pictures Objects in O(n^2)
+    genDistanceEuclidean();
+
+    // Generate Minimum Spanning Tree
+    kruskalMST();
 }
 
 template <typename T>
@@ -233,6 +247,71 @@ vector<float> FibonacciHeap<T>::vectorizar(CImg<float>& img){
         result.push_back( (img(x,y,0) + img(x,y,1) +  img(x,y,2))/3);
     }
     return result;
+}
+
+template<typename T>
+int FibonacciHeap<T>::find(subset* subsets, int i){
+    if (subsets[i].parent != i){
+        subsets[i].parent = find(subsets, subsets[i].parent);
+    }
+    return subsets[i].parent;
+}
+
+template<typename T>
+void FibonacciHeap<T>::Union(subset* subsets, int x, int y){
+    int xroot = find(subsets, x);
+    int yroot = find(subsets, y);
+
+    // Attach smaller rank tree under root of high rank tree (Union by Rank)
+    if (subsets[xroot].rank < subsets[yroot].rank){
+        subsets[xroot].parent = yroot;
+    }
+    else if (subsets[xroot].rank > subsets[yroot].rank){
+        subsets[yroot].parent = xroot;
+    }
+    // If ranks are same, then make one as root and increment its rank by one
+    else{
+        subsets[yroot].parent = xroot;
+        subsets[xroot].rank++;
+    }
+}
+
+template<typename T>
+void FibonacciHeap<T>::kruskalMST() {
+    cout << "** KruskalMST **\n";
+    int edgesResult = 0;
+    int i = 0;  // aristas extraidas del FiboHeap
+    // Allocate memory for creating V ssubsets
+    subset *subsets = new subset[this->pictureVector.size()];
+    cout << "subset arr Len: " << pictureVector.size() << "\n";
+    for (int v = 0; v < this->pictureVector.size(); ++v){
+        subsets[v].parent = v;
+        subsets[v].rank = 0;
+    }
+
+    cout << "Arista m_size: " << this->m_size << '\n';
+    // 3, 6
+    while (edgesResult < this->pictureVector.size() - 1 && i <= this->m_size){
+        // Step 2: Pick the smallest edge. And increment the index for next iteration
+        auto next_edge = this->GetMinv2();
+        this->Extract_Min();
+        i++;
+        int x = find(subsets, next_edge->src);
+        int y = find(subsets, next_edge->dst);
+
+        // If including this edge does't cause cycle, include it in result and increment the index
+        if (x != y){
+            //this->mstResult[edgesResult++] = next_edge;
+            mstResult.push_back(next_edge);
+            edgesResult++;
+            Union(subsets, x, y);
+        }
+        // Else discard the next_edge
+    }
+    cout<<"Following are the edges in the constructed MST\n";
+    for (i = 0; i < edgesResult; ++i){
+        cout<< mstResult[i]->src <<" -- "<< mstResult[i]->dst<<" == "<< mstResult[i]->m_key << endl;
+    }
 }
 
 template <typename T>
