@@ -35,9 +35,8 @@ public:
     FibonacciHeap();
     ~FibonacciHeap();
     void Extract_Min();
-    T GetMin();
-    Node<T>* GetMinv2();
-    void Delete(T deletekey);
+    T GetMinKey();
+    Node<T>* GetMin();
     void Insert(T newkey, Picture* a = nullptr, Picture* b = nullptr, int src = 0, int dst = 0);
     void Compactar();
     Node<T>* Unir(Node<T>* p1, Node<T>* p2);
@@ -66,12 +65,12 @@ void FibonacciHeap<T>::Insert(T newkey, Picture* a, Picture* b, int src, int dst
 }
 
 template <typename T>
-T FibonacciHeap<T>::GetMin() {
+T FibonacciHeap<T>::GetMinKey() {
     return min->m_key;
 }
 
 template <typename T>
-Node<T>* FibonacciHeap<T>::GetMinv2() {
+Node<T>* FibonacciHeap<T>::GetMin() {
     return min;
 }
 
@@ -262,14 +261,14 @@ void FibonacciHeap<T>::Union(subset* subsets, int x, int y){
     int xroot = find(subsets, x);
     int yroot = find(subsets, y);
 
-    // Attach smaller rank tree under root of high rank tree (Union by Rank)
+    // el subset del nodo con mayor ranking se convierte en padre del otro.
     if (subsets[xroot].rank < subsets[yroot].rank){
         subsets[xroot].parent = yroot;
     }
     else if (subsets[xroot].rank > subsets[yroot].rank){
         subsets[yroot].parent = xroot;
     }
-    // If ranks are same, then make one as root and increment its rank by one
+    // Si los ranking son los mismos, seleccionamos uno de ellos e incrementamos su ranking
     else{
         subsets[yroot].parent = xroot;
         subsets[xroot].rank++;
@@ -289,26 +288,23 @@ void FibonacciHeap<T>::kruskalMST() {
         subsets[v].rank = 0;
     }
 
-    cout << "Arista m_size: " << this->m_size << '\n';
-    // 3, 6
     while (edgesResult < this->pictureVector.size() - 1 && i <= this->m_size){
-        // Step 2: Pick the smallest edge. And increment the index for next iteration
-        auto next_edge = this->GetMinv2();
+        // Toma la arista con menor distancia (peso)
+        auto next_edge = this->GetMin();
         this->Extract_Min();
         i++;
         int x = find(subsets, next_edge->src);
         int y = find(subsets, next_edge->dst);
 
-        // If including this edge does't cause cycle, include it in result and increment the index
+        // Si la elección de la arista no genera ciclo, tomalo
         if (x != y){
-            //this->mstResult[edgesResult++] = next_edge;
             mstResult.push_back(next_edge);
             edgesResult++;
             Union(subsets, x, y);
         }
-        // Else discard the next_edge
+        // Si genera ciclo, ignoramos la arista
     }
-    cout<<"Following are the edges in the constructed MST\n";
+    cout<<"Print Edges in the generated MST\n";
     for (i = 0; i < edgesResult; ++i){
         cout<< mstResult[i]->src <<" -- "<< mstResult[i]->dst<<" == "<< mstResult[i]->m_key << endl;
     }
