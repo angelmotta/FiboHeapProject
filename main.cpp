@@ -12,14 +12,14 @@ int main() {
     fiboHeap.Insert(3);
     fiboHeap.Insert(4);
     fiboHeap.Insert(5);
-    cout << "Min: " << fiboHeap.GetMin() << "\n";
+    cout << "Min: " << fiboHeap.GetMinKey() << "\n";
     fiboHeap.Extract_Min();
     fiboHeap.Insert(10);
     fiboHeap.Insert(12);
     fiboHeap.Insert(13);
     fiboHeap.Insert(14);
     fiboHeap.Insert(15);
-    cout << "Min: " << fiboHeap.GetMin() << "\n";
+    cout << "Min: " << fiboHeap.GetMinKey() << "\n";
     fiboHeap.Extract_Min();
     fiboHeap.printGraphViz();
     */
@@ -27,8 +27,8 @@ int main() {
     fiboHeap.loadPictures();
     /*
     for(int i = 3; i >= 1; i--){
-        cout << "Min: " << fiboHeap.GetMin() << "\n";
-        auto minNode = fiboHeap.GetMinv2();
+        cout << "Min: " << fiboHeap.GetMinKey() << "\n";
+        auto minNode = fiboHeap.GetMin();
         cout << "picA: " << minNode->pictureA->pathFile << '\n';
         cout << "picB: " << minNode->pictureB->pathFile << '\n';
         fiboHeap.Extract_Min();
@@ -40,7 +40,7 @@ int main() {
         fiboHeap.Insert(i);
     }
     for(int i = 5000; i >= 1; i--){
-        cout << "Min: " << fiboHeap.GetMin() << "\n";
+        cout << "Min: " << fiboHeap.GetMinKey() << "\n";
         fiboHeap.Extract_Min();
     }
     */
