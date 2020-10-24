@@ -192,14 +192,14 @@ void FibonacciHeap<T>::genDistanceEuclidean(){
     //auto start = chrono::steady_clock::now();
     for(int i = 0; i < pictureVector.size(); i++){
         for(int j = i + 1; j < pictureVector.size(); j++){
-            //cout << "Euclidean distance: " << pictureVector[i].pathFile << " and " << pictureVector[j].pathFile << "\n";
+            cout << "Euclidean distance: " << pictureVector[i]->pathFile << " and " << pictureVector[j]->pathFile << "\n";
             float sum = 0;
             for(int k = 0; k < pictureVector[i]->vc.size(); k++){
                 sum += pow(pictureVector[i]->vc[k] - pictureVector[j]->vc[k], 2);
             }
             //cout << "Distance sum: " << sum << '\n';
             float distance = sqrt(sum);
-            //cout << "Distance sum: " << distance << '\n';
+            cout << "Distance : " << distance << '\n';
             this->Insert(distance, pictureVector[i], pictureVector[j], i, j);  // Insert into Fibonacci Heap
         }
     }
@@ -211,7 +211,7 @@ template <typename T>
 void FibonacciHeap<T>::loadPictures(){
     cout << "** Load Pictures **\n";
     // Generate list of total pictures in list
-    system("find faces_subSet -type f -name \"*.jpg\" > listPathPictures.txt");
+    system("find faces_few -type f -name \"*.jpg\" > listPathPictures.txt");
     // Open List path of Pictures and apply haar function to each picture
     string picFile;
     ifstream inFileList(fileListPics);
@@ -306,7 +306,8 @@ void FibonacciHeap<T>::kruskalMST() {
     }
     cout<<"Print Edges in the generated MST\n";
     for (i = 0; i < edgesResult; ++i){
-        cout<< mstResult[i]->src <<" -- "<< mstResult[i]->dst<<" == "<< mstResult[i]->m_key << endl;
+        cout << "id: " <<  mstResult[i]->src <<" "<< mstResult[i]->pictureA->pathFile << " -- "
+        << "id: " << mstResult[i]->dst <<" "<< mstResult[i]->pictureB->pathFile <<" == "<< mstResult[i]->m_key << endl;
     }
 }
 

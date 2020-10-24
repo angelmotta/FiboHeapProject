@@ -5,7 +5,7 @@
 using namespace std;
 
 int main() {
-    FibonacciHeap<int> fiboHeap;
+    FibonacciHeap<float> fiboHeap;
     /*
     fiboHeap.Insert(1);
     fiboHeap.Insert(2);
