@@ -1,0 +1,22 @@
+graph{
+    0;
+    1;
+    2;
+    3;
+    4;
+    5;
+    6;
+    0[image="faces_few/9336923.4.jpg", label=""];
+    1[image="faces_few/9336923.1.jpg", label=""];
+    2[image="faces_few/9336923.2.jpg", label=""];
+    3[image="faces_few/9336923.3.jpg", label=""];
+    4[image="faces_few/9326871.3.jpg", label=""];
+    5[image="faces_few/9326871.2.jpg", label=""];
+    6[image="faces_few/9326871.1.jpg", label=""];
+	1 -- 2 [label=1289];
+	2 -- 3 [label=1103];
+	3 -- 0 [label=2146];
+	3 -- 4 [label=8349];
+	4 -- 5 [label=707];
+	5 -- 6 [label=1026];
+}
